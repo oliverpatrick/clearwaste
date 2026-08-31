@@ -1,0 +1,7 @@
+{
+  "$schema": "../schema/object.schema.json",
+  "id": 1,
+  "name": "Tree",
+  "description": "A tree that can be chopped for resources.",
+  "actions": ["Chop", "Inspect"]
+}

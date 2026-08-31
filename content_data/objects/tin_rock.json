@@ -1,0 +1,7 @@
+{
+  "$schema": "../schema/object.schema.json",
+  "id": 2,
+  "name": "Tin Rock",
+  "description": "A rock containing tin ore.",
+  "actions": ["Mine", "Inspect"]
+}

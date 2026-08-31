@@ -1,0 +1,153 @@
+{
+  "$schema": "../schema/region.schema.json",
+  "regionX": 1,
+  "regionY": 0,
+  "size": 64,
+
+  "planes": [
+    {
+      "plane": 0,
+
+      "terrain": {
+        "defaultTexture": null,
+        "colour": {
+            "default": "#4f7d42",
+            "overrides": [
+      {
+        "x": 8,
+        "y": 20,
+        "value": "#72a85d"
+      },
+      {
+        "x": 15,
+        "y": 20,
+        "value": "#80633d"
+      }
+    ]
+        },
+        "overrides": [
+          {
+            "x": 10,
+            "y": 10,
+            "tile": "tile_purple_path",
+            "rotation": 1
+          },
+          {
+            "x": 11,
+            "y": 10,
+            "tile": "tile_purple_path",
+            "rotation": 1
+          }
+        ]
+      },
+
+      "height": {
+        "default": 0,
+        "overrides": []
+      },
+
+      "collision": {
+        "defaultWalkable": true,
+
+        "blockedTiles": [
+          [30, 30]
+        ],
+
+        "walls": [
+          {
+            "x": 15,
+            "y": 15,
+            "edge": "east"
+          },
+          {
+            "x": 15,
+            "y": 16,
+            "edge": "east"
+          }
+        ]
+      },
+
+      "gameObjects": [
+        {
+          "objectId": 1,
+          "x": 20,
+          "y": 15,
+          "rotation": 0
+        }
+      ],
+
+      "mobSpawns": [
+        {
+          "npcId": 1,
+          "x": 25,
+          "y": 20
+        },
+        {
+          "npcId": 2,
+          "x": 28,
+          "y": 22
+        }
+      ],
+
+      "groundItemSpawns": []
+    },
+
+    {
+      "plane": 1,
+      "terrain": {
+        "defaultTile": "tile_void",
+        "overrides": []
+      },
+      "height": {
+        "default": 0,
+        "overrides": []
+      },
+      "collision": {
+        "defaultWalkable": false,
+        "blockedTiles": [],
+        "walls": []
+      },
+      "gameObjects": [],
+      "mobSpawns": [],
+      "groundItemSpawns": []
+    },
+       {
+      "plane": 2,
+      "terrain": {
+        "defaultTile": "tile_void",
+        "overrides": []
+      },
+      "height": {
+        "default": 0,
+        "overrides": []
+      },
+      "collision": {
+        "defaultWalkable": false,
+        "blockedTiles": [],
+        "walls": []
+      },
+      "gameObjects": [],
+      "mobSpawns": [],
+      "groundItemSpawns": []
+    },
+   {
+      "plane": 3,
+      "terrain": {
+        "defaultTile": "tile_void",
+        "overrides": []
+      },
+      "height": {
+        "default": 0,
+        "overrides": []
+      },
+      "collision": {
+        "defaultWalkable": false,
+        "blockedTiles": [],
+        "walls": []
+      },
+      "gameObjects": [],
+      "mobSpawns": [],
+      "groundItemSpawns": []
+    }
+  ]
+}

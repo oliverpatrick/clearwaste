@@ -1,0 +1,141 @@
+[gd_scene format=3 uid="uid://qccibl7w3jxs"]
+
+[ext_resource type="Script" uid="uid://dn6cy41f71b2r" path="res://ui/screens/login/login_screen.gd" id="1_i2wxw"]
+
+[node name="LoginScreen" type="Control" unique_id=1750058034]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_i2wxw")
+
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=449625699]
+custom_minimum_size = Vector2(300, 400)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.483
+anchor_top = 0.469
+anchor_right = 0.517
+anchor_bottom = 0.531
+offset_left = -130.41602
+offset_top = -179.91202
+offset_right = 130.41595
+offset_bottom = 179.91199
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="LoginContainer" type="PanelContainer" parent="VBoxContainer" unique_id=1363396034]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/LoginContainer" unique_id=1363169184]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Label" type="Label" parent="VBoxContainer/LoginContainer/VBoxContainer" unique_id=1644576515]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+text = "WELCOME"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/LoginContainer/VBoxContainer" unique_id=715180964]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer" unique_id=760329398]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="EmailLineEdit" type="LineEdit" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=1317500082]
+layout_mode = 2
+placeholder_text = "Email"
+virtual_keyboard_type = 5
+
+[node name="RememberMeCheckBox" type="CheckBox" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=273579284]
+layout_mode = 2
+size_flags_stretch_ratio = 0.0
+text = "Remember me"
+
+[node name="PasswordLineEdit" type="LineEdit" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=639486763]
+layout_mode = 2
+placeholder_text = "Password"
+virtual_keyboard_type = 6
+
+[node name="LoginButton" type="Button" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer/VBoxContainer" unique_id=111774286]
+layout_mode = 2
+text = "LOGIN"
+
+[node name="MarginContainer2" type="MarginContainer" parent="VBoxContainer/LoginContainer/VBoxContainer" unique_id=572518486]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer2" unique_id=623755710]
+layout_mode = 2
+
+[node name="HSeparator" type="HSeparator" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=1500213385]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=83080553]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="Label" type="Label" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer2/HBoxContainer/MarginContainer" unique_id=1837889848]
+layout_mode = 2
+text = "or"
+
+[node name="HSeparator2" type="HSeparator" parent="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer2/HBoxContainer" unique_id=520181681]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="RegisterCTA" type="PanelContainer" parent="VBoxContainer" unique_id=1845434451]
+layout_mode = 2
+size_flags_vertical = 3
+size_flags_stretch_ratio = 0.1
+
+[node name="MarginContainer" type="MarginContainer" parent="VBoxContainer/RegisterCTA" unique_id=2032752747]
+layout_mode = 2
+theme_override_constants/margin_left = 8
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 8
+theme_override_constants/margin_bottom = 8
+
+[node name="RegisterButton" type="Button" parent="VBoxContainer/RegisterCTA/MarginContainer" unique_id=1692445579]
+layout_mode = 2
+text = "Register today!"
+
+[node name="WorldSelectButton" type="Button" parent="." unique_id=849458400]
+layout_mode = 0
+offset_left = 8.0
+offset_top = 8.0
+offset_right = 139.0
+offset_bottom = 39.0
+text = "World [number]"
+
+[node name="StatusLabel" type="Label" parent="." unique_id=623625896]
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.5
+anchor_top = 0.898
+anchor_right = 0.5
+anchor_bottom = 0.9
+offset_left = -20.0
+offset_top = -23.0
+offset_right = 20.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[connection signal="pressed" from="VBoxContainer/LoginContainer/VBoxContainer/MarginContainer/VBoxContainer/LoginButton" to="." method="_on_login_button_pressed"]
+[connection signal="pressed" from="VBoxContainer/RegisterCTA/MarginContainer/RegisterButton" to="." method="_on_register_button_pressed"]

@@ -1,0 +1,190 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "World Region",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["$schema", "regionX", "regionY", "size", "planes"],
+  "properties": {
+    "$schema": {"type": "string"},
+    "regionX": {"type": "integer"},
+    "regionY": {"type": "integer"},
+    "size": {"const": 64},
+    "planes": {
+      "type": "array",
+      "items": {"$ref": "#/$defs/plane"},
+      "minItems": 1,
+      "maxItems": 4
+    }
+  },
+  "$defs": {
+    "coordinate": {"type": "integer", "minimum": 0, "maximum": 63},
+    "plane": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "plane",
+        "terrain",
+        "height",
+        "collision",
+        "gameObjects",
+        "mobSpawns",
+        "groundItemSpawns"
+      ],
+      "properties": {
+        "plane": {"type": "integer", "minimum": 0, "maximum": 3},
+        "terrain": {"$ref": "#/$defs/terrain"},
+        "height": {"$ref": "#/$defs/height"},
+        "collision": {"$ref": "#/$defs/collision"},
+        "gameObjects": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/objectPlacement"}
+        },
+        "mobSpawns": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/mobPlacement"}
+        },
+        "groundItemSpawns": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/groundItemPlacement"}
+        }
+      }
+    },
+    "terrain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["overrides"],
+      "properties": {
+        "defaultTexture": {"type": ["string", "null"]},
+        "defaultTile": {"type": "string", "minLength": 1},
+        "colour": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["default", "overrides"],
+          "properties": {
+            "default": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"},
+            "overrides": {
+              "type": "array",
+              "items": {"$ref": "#/$defs/colourOverride"}
+            }
+          }
+        },
+        "overrides": {
+          "type": "array",
+          "items": {"$ref": "#/$defs/terrainOverride"}
+        }
+      },
+      "anyOf": [
+        {"required": ["colour"]},
+        {"required": ["defaultTile"]}
+      ]
+    },
+    "colourOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "value"],
+      "properties": {
+        "x": {"$ref": "#/$defs/coordinate"},
+        "y": {"$ref": "#/$defs/coordinate"},
+        "value": {"type": "string", "pattern": "^#[0-9a-fA-F]{6}$"}
+      }
+    },
+    "terrainOverride": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "tile", "rotation"],
+      "properties": {
+        "x": {"$ref": "#/$defs/coordinate"},
+        "y": {"$ref": "#/$defs/coordinate"},
+        "tile": {"type": "string", "minLength": 1},
+        "rotation": {"type": "integer", "minimum": 0, "maximum": 3}
+      }
+    },
+    "height": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["default", "overrides"],
+      "properties": {
+        "default": {"type": "number"},
+        "overrides": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x", "y", "value"],
+            "properties": {
+              "x": {"$ref": "#/$defs/coordinate"},
+              "y": {"$ref": "#/$defs/coordinate"},
+              "value": {"type": "number"}
+            }
+          }
+        }
+      }
+    },
+    "collision": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["defaultWalkable", "blockedTiles", "walls"],
+      "properties": {
+        "defaultWalkable": {"type": "boolean"},
+        "blockedTiles": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "prefixItems": [
+              {"$ref": "#/$defs/coordinate"},
+              {"$ref": "#/$defs/coordinate"}
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        },
+        "walls": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["x", "y", "edge"],
+            "properties": {
+              "x": {"$ref": "#/$defs/coordinate"},
+              "y": {"$ref": "#/$defs/coordinate"},
+              "edge": {"enum": ["north", "east", "south", "west"]}
+            }
+          }
+        }
+      }
+    },
+    "objectPlacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["objectId", "x", "y", "rotation"],
+      "properties": {
+        "objectId": {"type": "integer", "minimum": 1},
+        "x": {"$ref": "#/$defs/coordinate"},
+        "y": {"$ref": "#/$defs/coordinate"},
+        "rotation": {"type": "integer", "minimum": 0, "maximum": 3}
+      }
+    },
+    "mobPlacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["npcId", "x", "y"],
+      "properties": {
+        "npcId": {"type": "integer", "minimum": 1},
+        "x": {"$ref": "#/$defs/coordinate"},
+        "y": {"$ref": "#/$defs/coordinate"}
+      }
+    },
+    "groundItemPlacement": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["itemId", "x", "y", "quantity"],
+      "properties": {
+        "itemId": {"type": "integer", "minimum": 1},
+        "x": {"$ref": "#/$defs/coordinate"},
+        "y": {"$ref": "#/$defs/coordinate"},
+        "quantity": {"type": "integer", "minimum": 1}
+      }
+    }
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "$schema": "schema/manifest.schema.json",
+  "version": 1,
+  "gameplay_hash": "test-hash"
+}

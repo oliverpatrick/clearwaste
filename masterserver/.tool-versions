@@ -1,0 +1,7 @@
+golang 1.26.3
+I've installed chi, I want to start building the account module of my mmo. Im debating using an orm and having a
+  postgres database. I'll also need to dockerise this api so i can use the database in docker for testing as i dont
+  have it installed locally. I will start back to front with building out the login/register endpoints and related
+  logic as this is an mmo the account module will have to save a new user to the database and grant a token this
+  token will be used to pass to the tcp transport in later iterations to log the user into the game. help me plan
+  and build this feature

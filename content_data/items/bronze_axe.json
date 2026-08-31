@@ -1,0 +1,12 @@
+{
+    "$schema": "../schema/item.schema.json",
+    "id": 1,
+    "name": "Bronze Axe",
+    "description": "A quickly assembled tool for collecting salvage",
+    "price": 2,
+    "members": false,
+    "model": "bronze_axe",
+    "weight": 1000,
+    "canTrade": true,
+    "actions": ["Wield", "Inspect", "Drop"] 
+}

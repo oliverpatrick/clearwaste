@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://pg2tfllpi3eb"]
+
+[sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ifgtf"]
+sky_horizon_color = Color(0.5542817, 0.5669794, 0.5858562, 1)
+ground_bottom_color = Color(0.09172753, 0.07351848, 0.053025566, 1)
+ground_horizon_color = Color(0.5542817, 0.5669794, 0.5858562, 1)
+
+[sub_resource type="Sky" id="Sky_sul5r"]
+sky_material = SubResource("ProceduralSkyMaterial_ifgtf")
+
+[sub_resource type="Environment" id="Environment_7h61r"]
+background_mode = 2
+sky = SubResource("Sky_sul5r")
+
+[node name="Game" type="Node" unique_id=1016089749]
+
+[node name="Env" type="Node" parent="." unique_id=2126639147]
+
+[node name="Sun" type="DirectionalLight3D" parent="Env" unique_id=1718438034]
+transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 50, 0)
+shadow_enabled = true
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="Env" unique_id=314538404]
+environment = SubResource("Environment_7h61r")

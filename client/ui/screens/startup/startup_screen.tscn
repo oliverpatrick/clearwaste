@@ -1,0 +1,32 @@
+[gd_scene format=3 uid="uid://b7qqnub3cw22u"]
+
+[ext_resource type="Script" uid="uid://d3i8ndk35jr7a" path="res://ui/screens/startup/start_screen.gd" id="1_lujdy"]
+
+[node name="StartupScreen" type="Control" unique_id=347645589]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_lujdy")
+
+[node name="ColorRect" type="ColorRect" parent="." unique_id=877878052]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.13682577, 0.13682574, 0.13682571, 1)
+
+[node name="ProgressBar" type="ProgressBar" parent="." unique_id=806030008]
+custom_minimum_size = Vector2(0, 50)
+layout_mode = 1
+anchors_preset = -1
+anchor_left = 0.3
+anchor_top = 0.45
+anchor_right = 0.703
+anchor_bottom = 0.527
+offset_right = 0.5439453
+offset_bottom = -22.895996

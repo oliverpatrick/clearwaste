@@ -1,0 +1,12 @@
+{
+    "$schema": "../schema/item.schema.json",
+    "id": 3,
+    "name": "Coin",
+    "description": "A single gold piece.",
+    "price": 1,
+    "members": false,
+    "model": "coin",
+    "weight": 0,
+    "canTrade": true,
+    "actions": ["Inspect", "Drop"] 
+}

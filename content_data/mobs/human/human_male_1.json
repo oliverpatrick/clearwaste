@@ -1,0 +1,67 @@
+{
+    "$schema": "../../schema/mob.schema.json",
+    "id": 1,
+    "name": "Man",
+    "description": "He looks ready to defend himself.",
+    "level": 2,
+    "combatStats": {
+        "hitpoints": 7,
+        "maxHitpoints": 7,
+        "dexterityLevel": 1,
+        "strengthLevel": 1,
+        "evasionLevel": 1,
+        "rangedLevel": 1,
+        "magicLevel": 1,
+        "attackSpeedTicks": 4
+    },
+    "attackStyle": "accurate",
+    "combatStyle": "melee",
+    "aggressive": false,
+    "respawnTimerSeconds": 30,
+    "actions": ["Attack", "Inspect", "Talk-to"],
+    "wander_radius": 8,
+    "chase_distance": 10,
+    "size": 1,
+    "statsBonuses": {
+        "attack": {
+            "slash": 0,
+            "piercing": 0,
+            "blunt": 0,
+            "fire": 0,
+            "frost": 0,
+            "nature": 0,
+            "lightning": 0,
+            "ballistic": 0,
+            "energy": 0
+        },
+        "evasion": {
+            "slash": 0,
+            "piercing": 0,
+            "blunt": 0,
+            "fire": 0,
+            "frost": 0,
+            "nature": 0,
+            "lightning": 0,
+            "ballistic": 0,
+            "energy": 0
+        },
+        "other": {
+            "strength": 0,
+            "shielding": 0
+        }
+    },
+    "damageTypes": ["blunt"],
+    "maxHit": 1,
+    "animations": {
+        "idle": "human_idle",
+        "walk": "human_walk",
+        "attack": "human_punch",
+        "block": "human_block",
+        "death": "human_death"
+    },
+    "sounds": {
+        "hit": "man_hit",
+        "death": "man_death"
+    },
+    "lootTableId": "loot_man_tier1"
+}

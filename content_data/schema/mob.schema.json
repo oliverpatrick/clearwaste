@@ -1,0 +1,102 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mob Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "$schema",
+    "id",
+    "name",
+    "description",
+    "level",
+    "combatStats",
+    "attackStyle",
+    "combatStyle",
+    "aggressive",
+    "respawnTimerSeconds",
+    "actions",
+    "wander_radius",
+    "chase_distance",
+    "size",
+    "statsBonuses",
+    "damageTypes",
+    "maxHit",
+    "animations",
+    "sounds",
+    "lootTableId"
+  ],
+  "properties": {
+    "$schema": {"type": "string"},
+    "id": {"type": "integer", "minimum": 1},
+    "name": {"type": "string", "minLength": 1},
+    "description": {"type": "string", "minLength": 1},
+    "level": {"type": "integer", "minimum": 0},
+    "combatStats": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "hitpoints",
+        "maxHitpoints",
+        "dexterityLevel",
+        "strengthLevel",
+        "evasionLevel",
+        "rangedLevel",
+        "magicLevel",
+        "attackSpeedTicks"
+      ],
+      "properties": {
+        "hitpoints": {"type": "integer", "minimum": 1},
+        "maxHitpoints": {"type": "integer", "minimum": 1},
+        "dexterityLevel": {"type": "integer", "minimum": 0},
+        "strengthLevel": {"type": "integer", "minimum": 0},
+        "evasionLevel": {"type": "integer", "minimum": 0},
+        "rangedLevel": {"type": "integer", "minimum": 0},
+        "magicLevel": {"type": "integer", "minimum": 0},
+        "attackSpeedTicks": {"type": "integer", "minimum": 1}
+      }
+    },
+    "attackStyle": {"type": "string", "minLength": 1},
+    "combatStyle": {"type": "string", "minLength": 1},
+    "aggressive": {"type": "boolean"},
+    "respawnTimerSeconds": {"type": "integer", "minimum": 0},
+    "actions": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "wander_radius": {"type": "integer", "minimum": 0},
+    "chase_distance": {"type": "integer", "minimum": 0},
+    "size": {"type": "integer", "minimum": 1},
+    "statsBonuses": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["attack", "evasion", "other"],
+      "properties": {
+        "attack": {"$ref": "#/$defs/integerMap"},
+        "evasion": {"$ref": "#/$defs/integerMap"},
+        "other": {"$ref": "#/$defs/integerMap"}
+      }
+    },
+    "damageTypes": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "maxHit": {"type": "integer", "minimum": 0},
+    "animations": {"$ref": "#/$defs/stringMap"},
+    "sounds": {"$ref": "#/$defs/stringMap"},
+    "lootTableId": {"type": "string", "minLength": 1}
+  },
+  "$defs": {
+    "integerMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "integer"}
+    },
+    "stringMap": {
+      "type": "object",
+      "minProperties": 1,
+      "additionalProperties": {"type": "string", "minLength": 1}
+    }
+  }
+}
