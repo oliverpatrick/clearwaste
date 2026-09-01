@@ -14,7 +14,7 @@ func _init() -> void:
 	assert(registry.item_by_id(1).name == "Bronze Axe")
 	assert(registry.mobs.size() == 2)
 	assert(registry.mob_by_id(2).name == "Woman")
-	assert(registry.regions.size() == 4)
+	assert(registry.regions.size() == 16)
 	var region: Dictionary = registry.region_at(0, 0, 0)
 	assert(region.heights.size() == 65)
 	assert(region.heights[0].size() == 65)
@@ -63,6 +63,8 @@ func _init() -> void:
 	assert(root.get_camera_3d() == null)
 
 	game._on_login_succeeded(valid_response)
+	await process_frame
+	game._on_world_connected()
 	await process_frame
 	assert(game.find_child("LoginScreen", true, false) == null)
 	assert(game.find_child("Region_0_0_0", true, false) != null)

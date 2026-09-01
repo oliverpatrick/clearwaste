@@ -1,75 +1,52 @@
 extends Node
 
-const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd
+const Protocol = preload("uid://bvppiqbq80y0l")
+const PROTOCOL_VERSION := 1
 
-signal connected(entity: int)
+signal connected
 signal disconnected(reason: String)
 signal message_received(id: int, message: Variant)
-signal content_mismatch
 
 var peer := StreamPeerTCP.new()
 var receive_buffer := PackedByteArray()
 var _ticket := ""
-var _content_hash := ""
-var _handshake_sent := false
-var entity_id := 0
+var _state := "idle"
 var _was_transport_connected := false
 var _disconnect_reported := false
-var _world_sequence := 0
+var entity_id := 0
 
-func connect_to_world(host: String, port: int, ticket: String, content_hash: String) -> Error:
-	_world_sequence = 0
+func connect_to_world(host: String, port: int, ticket: String) -> Error:
+	close()
 	_ticket = ticket
-	_content_hash = content_hash
-	_handshake_sent = false
+	_state = "connecting"
 	_was_transport_connected = false
 	_disconnect_reported = false
 	entity_id = 0
 	receive_buffer.clear()
 	return peer.connect_to_host(host, port)
 
-func next_world_sequence() -> int:
-	_world_sequence += 1
-	return _world_sequence
-
 func _process(_delta: float) -> void:
 	peer.poll()
 	var status := peer.get_status()
-	if status == StreamPeerTCP.STATUS_CONNECTED and not _handshake_sent:
+	if status == StreamPeerTCP.STATUS_CONNECTED:
 		_was_transport_connected = true
-		peer.put_data(build_connect_frame(_ticket))
-		peer.put_data(build_content_hello(_content_hash))
-		_handshake_sent = true
+		if _state == "connecting":
+			_state = "server_hello"
+			peer.put_data(Protocol.encode_client_hello(PROTOCOL_VERSION))
+		_read_available()
 	elif status == StreamPeerTCP.STATUS_ERROR:
 		_report_disconnect("Connection failed")
 	elif status == StreamPeerTCP.STATUS_NONE and _was_transport_connected:
-		if entity_id == 0:
-			content_mismatch.emit()
-			_report_disconnect("Content mismatch or rejected session")
-		else:
-			_report_disconnect("Disconnected from world")
-	if status != StreamPeerTCP.STATUS_CONNECTED:
-		return
+		_report_disconnect("Disconnected from world")
+
+func _read_available() -> void:
 	var available := peer.get_available_bytes()
-	if available > 0:
-		var result := peer.get_data(available)
-		if result[0] == OK:
-			receive_buffer.append_array(result[1])
-			_drain_frames()
-
-func build_connect_frame(ticket: String) -> PackedByteArray:
-	var ticket_bytes := ticket.to_utf8_buffer()
-	if ticket_bytes.size() != 43:
-		return PackedByteArray()
-	var payload := PackedByteArray([43])
-	payload.append_array(ticket_bytes)
-	return Protocol.encode_frame(Protocol.CONNECT, payload)
-
-func build_content_hello(content_hash: String) -> PackedByteArray:
-	var digest := content_hash.hex_decode()
-	if digest.size() != 32:
-		return PackedByteArray()
-	return Protocol.encode_frame(Protocol.CONTENT_HELLO, digest)
+	if available <= 0:
+		return
+	var result := peer.get_data(available)
+	if result[0] == OK:
+		receive_buffer.append_array(result[1])
+		_drain_frames()
 
 func send_frame(frame: PackedByteArray) -> Error:
 	if peer.get_status() != StreamPeerTCP.STATUS_CONNECTED or frame.is_empty():
@@ -83,24 +60,47 @@ func _report_disconnect(reason: String) -> void:
 	if _disconnect_reported:
 		return
 	_disconnect_reported = true
+	_state = "idle"
 	disconnected.emit(reason)
-	set_process(false)
 
 func _drain_frames() -> void:
-	while receive_buffer.size() >= 4:
-		var payload_size := (receive_buffer[2] << 8) | receive_buffer[3]
+	while receive_buffer.size() >= Protocol.HEADER_SIZE:
+		var payload_size := Protocol._u32(receive_buffer, 2)
 		if payload_size > Protocol.MAX_PAYLOAD:
 			close()
-			disconnected.emit("Invalid server frame")
+			_report_disconnect("Invalid server frame")
 			return
-		var frame_size := 4 + payload_size
+		var frame_size := Protocol.HEADER_SIZE + payload_size
 		if receive_buffer.size() < frame_size:
 			return
-		var frame_bytes := receive_buffer.slice(0, frame_size)
+		var frame = Protocol.decode_frame(receive_buffer.slice(0, frame_size))
 		receive_buffer = receive_buffer.slice(frame_size)
-		var frame = Protocol.decode_frame(frame_bytes)
-		var message = Protocol.decode_message(frame.id, frame.payload)
-		if frame.id == Protocol.CONNECT_ACK and message != null:
-			entity_id = message.entity
-			connected.emit(entity_id)
-		message_received.emit(frame.id, message)
+		if frame == null:
+			_report_disconnect("Invalid server frame")
+			return
+		_handle_frame(frame.id, frame.payload)
+
+func _handle_frame(id: int, payload: PackedByteArray) -> void:
+	if _state == "server_hello":
+		if id != Protocol.SERVER_HELLO:
+			_report_disconnect("Invalid world handshake")
+			return
+		var hello = Protocol.decode_server_hello(payload)
+		if hello == null or not hello.accepted or hello.version != PROTOCOL_VERSION:
+			_report_disconnect("World protocol rejected")
+			return
+		_state = "login"
+		peer.put_data(Protocol.encode_login_request(_ticket))
+		return
+	if _state == "login":
+		if id == Protocol.LOGIN_ACCEPTED and payload.is_empty():
+			_state = "connected"
+			connected.emit()
+			return
+		if id == Protocol.LOGIN_REJECTED and payload.is_empty():
+			_report_disconnect("World login rejected")
+			return
+		_report_disconnect("Invalid world login response")
+		return
+	var message = Protocol.decode_message(id, payload)
+	message_received.emit(id, message)

@@ -6,6 +6,7 @@ const DefinitionRegistryScript = preload("res://core/content/definition_registry
 @onready var world_stream: WorldStream = $WorldStream
 @onready var camera: Camera3D = $Camera
 @onready var auth_client: Node = get_node("/root/AuthClient")
+@onready var game_network_client: Node = get_node("/root/GameNetworkClient")
 
 var ticket := ""
 var account_id := 0
@@ -19,6 +20,8 @@ func _ready() -> void:
 	login_screen.submitted.connect(_on_login_submitted)
 	auth_client.login_succeeded.connect(_on_login_succeeded)
 	auth_client.login_failed.connect(_on_login_failed)
+	game_network_client.connected.connect(_on_world_connected)
+	game_network_client.disconnected.connect(_on_world_disconnected)
 
 
 func _on_login_submitted(email: String, password: String) -> void:
@@ -36,6 +39,13 @@ func _on_login_succeeded(response: Dictionary) -> void:
 	character_id = int(response.characterId)
 	world_host = str(response.world.host)
 	world_port = int(response.world.port)
+	game_network_client.connect_to_world(world_host, world_port, ticket)
+
+func _on_world_disconnected(reason: String) -> void:
+	if login_screen != null:
+		login_screen.show_error(reason)
+
+func _on_world_connected() -> void:
 	login_screen.hide()
 	login_screen.queue_free()
 	_load_world()
@@ -47,8 +57,8 @@ func _load_world() -> void:
 		push_error("Failed to load content")
 		return
 	world_stream.configure(registry)
-	if not world_stream.load_region("0:0:0"):
-		push_error("Failed to load region 0:0:0")
+	if world_stream.load_all_regions() == 0:
+		push_error("Failed to load regions")
 		return
 	camera.look_at(Vector3(32.0, 0.0, 32.0), Vector3.UP)
 	camera.current = true

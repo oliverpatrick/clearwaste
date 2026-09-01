@@ -5,7 +5,9 @@ const MapLoaderScript = preload("res://core/content/map_loader.gd")
 
 var items: Dictionary = {}
 var mobs: Dictionary = {}
+var objects: Dictionary = {}
 var regions: Dictionary = {}
+var manifest: Dictionary = {}
 
 
 func load_content(root_path: String = "") -> bool:
@@ -13,10 +15,14 @@ func load_content(root_path: String = "") -> bool:
 		root_path = ProjectSettings.globalize_path("res://../content_data")
 	items.clear()
 	mobs.clear()
+	objects.clear()
 	regions.clear()
+	var loaded_manifest = _read_json(root_path.path_join("manifest.json"))
+	manifest = loaded_manifest if loaded_manifest is Dictionary else {}
 	return _load_definitions(root_path.path_join("items"), items) \
 		and _load_definitions(root_path.path_join("mobs"), mobs) \
-		and _load_initial_region(root_path.path_join("map/region_0_0.json"))
+		and _load_definitions(root_path.path_join("objects"), objects) \
+		and _load_regions(root_path.path_join("map"))
 
 
 func item_by_id(id: int):
@@ -25,6 +31,9 @@ func item_by_id(id: int):
 
 func mob_by_id(id: int):
 	return mobs.get(id)
+
+func object_by_id(id: int):
+	return objects.get(id)
 
 
 func region_at(x: int, y: int, plane: int = 0):
@@ -48,10 +57,19 @@ func _load_definitions(path: String, registry: Dictionary) -> bool:
 	return true
 
 
-func _load_initial_region(path: String) -> bool:
-	var loaded := MapLoaderScript.load_region(path)
-	regions.merge(loaded)
-	return not loaded.is_empty()
+func _load_regions(path: String) -> bool:
+	var directory := DirAccess.open(path)
+	if directory == null:
+		return false
+	var loaded_any := false
+	for file_name in directory.get_files():
+		if file_name.begins_with("region_") and file_name.get_extension().to_lower() == "json":
+			var loaded := MapLoaderScript.load_region(path.path_join(file_name))
+			if loaded.is_empty():
+				return false
+			regions.merge(loaded)
+			loaded_any = true
+	return loaded_any
 
 
 func _read_json(path: String):

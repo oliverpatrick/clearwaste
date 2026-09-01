@@ -3,7 +3,7 @@ extends Node3D
 
 const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd
 const TerrainHeightScript = preload("uid://ctl1kxhgld3tn") # world/terrain_height.gd
-const TreeScene = preload("uid://b5sbv81foeoy2") # assets/world/mutated_tree.tscn
+const AssetRegistryScript = preload("res://core/content/asset_registry.gd")
 var objects: Dictionary = {}
 var pending_quantities: Dictionary = {}
 var bundle
@@ -42,30 +42,30 @@ func handle_message(id: int, message) -> void:
 func _spawn_object(message: Dictionary) -> void:
 	if objects.has(message.entity):
 		return
-	var definition_id := str(message.get("definition_id", ""))
-	var is_tree := definition_id == "resource.mutated_tree"
-	var body: StaticBody3D = TreeScene.instantiate() if is_tree else StaticBody3D.new()
+	var object_id := int(message.get("object_id", message.get("definition_id", 0)))
+	var object_scene = AssetRegistryScript.object_scene(object_id)
+	var body: StaticBody3D = object_scene.instantiate() if object_scene != null else StaticBody3D.new()
 	body.name = "Object_%d" % message.entity
 	body.set_meta("entity_id", message.entity)
-	body.set_meta("definition_id", definition_id)
-	body.set_meta("context_kind", "resource" if is_tree else "ground_item")
+	body.set_meta("object_id", object_id)
+	body.set_meta("item_id", int(message.get("item_id", 0)))
+	body.set_meta("context_kind", "resource" if object_id > 0 else "ground_item")
 	body.set_meta("tile_x", int(message.x))
 	body.set_meta("tile_z", int(message.z))
 	body.set_meta("plane", int(message.plane))
-	if not is_tree:
+	if object_scene == null:
 		body.set_meta("quantity", pending_quantities.get(message.entity, 1))
 		pending_quantities.erase(message.entity)
 	if not body.is_in_group("Interactable"):
 		body.add_to_group("Interactable")
-	if is_tree:
-		_add_stump(body)
+	if object_scene != null:
 		_place_object(body, message)
 		return
 	var mesh_instance := MeshInstance3D.new()
 	var collision := CollisionShape3D.new()
 	var material := StandardMaterial3D.new()
 	material.roughness = 0.86
-	if definition_id == "item.basic_axe":
+	if int(message.get("item_id", 0)) == 1:
 		mesh_instance.mesh = BoxMesh.new()
 		mesh_instance.scale = Vector3(0.18, 0.7, 0.12)
 		mesh_instance.position.y = 0.35
@@ -107,12 +107,12 @@ func ground_items_at(entity: int) -> Array:
 			continue
 		if object.get_meta("tile_x") != target.get_meta("tile_x") or object.get_meta("tile_z") != target.get_meta("tile_z") or object.get_meta("plane") != target.get_meta("plane"):
 			continue
-		var definition_id := str(object.get_meta("definition_id", ""))
-		var definition = bundle.definition_by_id(definition_id) if bundle != null else null
+		var item_id := int(object.get_meta("item_id", 0))
+		var definition = bundle.item_by_id(item_id) if bundle != null else null
 		stacks.append({
 			"entity": int(item_entity),
-			"definition_id": definition_id,
-			"name": str(definition.get("name", definition_id)) if definition != null else definition_id,
+			"item_id": item_id,
+			"name": str(definition.get("name", item_id)) if definition != null else str(item_id),
 			"quantity": int(object.get_meta("quantity", 1)),
 		})
 	stacks.sort_custom(func(a: Dictionary, b: Dictionary): return a.entity < b.entity)

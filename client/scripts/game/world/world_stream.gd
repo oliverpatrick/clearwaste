@@ -22,6 +22,15 @@ func load_region(key: String) -> bool:
 	loaded[key] = instance
 	return true
 
+func load_all_regions() -> int:
+	if bundle == null:
+		return 0
+	var count := 0
+	for key in bundle.regions:
+		if load_region(str(key)):
+			count += 1
+	return count
+
 func unload_region(key: String) -> void:
 	if not loaded.has(key):
 		return

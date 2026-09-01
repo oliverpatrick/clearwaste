@@ -2,8 +2,8 @@ class_name PlayerRegistry
 extends Node3D
 
 const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd
-const PLAYER_SCENE = preload("uid://tvjj76iceovt") # assets/player/player.tscn
-const NPC_HUMAN_MAN_SCENE = preload("uid://dmfqsfcnawdue") # assets/mobs/human/human_man.tscn
+const AssetRegistryScript = preload("res://core/content/asset_registry.gd")
+const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
 
 signal local_player_ready(player: Node3D)
 
@@ -65,15 +65,17 @@ func _spawn_npc(message: Dictionary) -> void:
 	if npcs.has(entity):
 		npcs[entity].snap_to_tile(message.x, message.z, message.plane)
 		return
-	var definition = bundle.npc_by_id(str(message.get("definition_id", "")))
-	if definition == null or str(definition.get("presentation", {}).get("model_id", "")) != "model.player":
-		push_error("Unknown or unsupported NPC definition: %s" % message.get("definition_id", ""))
+	var npc_id := int(message.get("npc_id", message.get("definition_id", 0)))
+	var definition = bundle.mob_by_id(npc_id) if bundle != null else null
+	var scene = AssetRegistryScript.npc_scene(npc_id)
+	if definition == null or scene == null:
+		push_error("Unknown or unsupported NPC definition: %d" % npc_id)
 		return
-	var npc: Node3D = NPC_HUMAN_MAN_SCENE.instantiate()
+	var npc: Node3D = scene.instantiate()
 	npc.name = "NPC_%d" % entity
 	npc.configure(entity, str(definition.get("name", "")), bundle)
 	npc.set_meta("entity_id", entity)
-	npc.set_meta("definition_id", str(definition.id))
+	npc.set_meta("npc_id", npc_id)
 	npc.set_meta("context_kind", "npc")
 	npc.set_meta("npc_level", int(definition.get("combat", {}).get("level", 0)))
 	npc.set_meta("npc_actions", definition.get("actions", []).duplicate())
@@ -100,7 +102,7 @@ func npc_context_actions(entity: int) -> Array:
 
 func npc_definition(entity: int):
 	var npc = npcs.get(entity)
-	return bundle.npc_by_id(str(npc.get_meta("definition_id", ""))) if npc != null and bundle != null else null
+	return bundle.mob_by_id(int(npc.get_meta("npc_id", 0))) if npc != null and bundle != null else null
 
 func display_name_for(entity: int) -> String:
 	var character = _character_for(entity)

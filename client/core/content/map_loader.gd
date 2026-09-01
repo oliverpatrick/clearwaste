@@ -23,6 +23,11 @@ static func normalize_region(source: Dictionary) -> Dictionary:
 			"z": region_z,
 			"plane": plane_id,
 			"heights": _normalize_heights(region_x, region_z, plane.height),
+			"terrain": plane.get("terrain", {}),
+			"collision": plane.get("collision", {}),
+			"game_objects": plane.get("gameObjects", []),
+			"mob_spawns": plane.get("mobSpawns", []),
+			"ground_item_spawns": plane.get("groundItemSpawns", []),
 		}
 	return regions
 
@@ -44,5 +49,8 @@ static func _normalize_heights(region_x: int, region_z: int, source: Dictionary)
 			row.append(height)
 		heights.append(row)
 	for override: Dictionary in source.get("overrides", []):
-		heights[int(override.y)][int(override.x)] += float(override.value)
+		var x := int(override.get("x", -1))
+		var z := int(override.get("y", -1))
+		if x >= 0 and x <= REGION_SIZE and z >= 0 and z <= REGION_SIZE:
+			heights[z][x] += float(override.get("value", 0.0))
 	return heights
