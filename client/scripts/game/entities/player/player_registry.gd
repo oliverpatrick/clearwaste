@@ -3,6 +3,7 @@ extends Node3D
 
 const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd
 const AssetRegistryScript = preload("res://core/content/asset_registry.gd")
+const RemotePlayerScript = preload("res://scenes/player/remote_player.gd")
 
 signal local_player_ready(player: Node3D)
 
@@ -53,9 +54,10 @@ func _spawn_player(message: Dictionary) -> void:
 	var player_scene = AssetRegistryScript.appearance_scene(int(message.get("appearance_id", 0)))
 	if player_scene == null:
 		return
-	var player: Node3D = player_scene.instantiate()
+	var player: Node3D = RemotePlayerScript.new()
+	player.add_child(player_scene.instantiate())
 	player.name = "Player_%d" % index
-	player.configure(index, message.name, bundle)
+	player.configure(index, str(message.get("name", "Development")), bundle)
 	player.snap_to_tile(message.x, message.z, message.plane)
 	add_child(player)
 	players[index] = player
@@ -73,7 +75,8 @@ func _spawn_npc(message: Dictionary) -> void:
 	if definition == null or scene == null:
 		push_error("Unknown or unsupported NPC definition: %d" % npc_id)
 		return
-	var npc: Node3D = scene.instantiate()
+	var npc: Node3D = RemotePlayerScript.new()
+	npc.add_child(scene.instantiate())
 	npc.name = "NPC_%d" % entity
 	npc.configure(entity, str(definition.get("name", "")), bundle)
 	npc.set_meta("entity_id", entity)

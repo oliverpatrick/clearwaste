@@ -18,8 +18,9 @@ var health_bar
 
 func _ready() -> void:
 	#health_bar = HealthBar3DScript.new()
-	health_bar.name = "HealthBar3D"
-	add_child(health_bar)
+	if health_bar != null:
+		health_bar.name = "HealthBar3D"
+		add_child(health_bar)
 
 func configure(index: int, player_name: String, bundle) -> void:
 	player_index = index
@@ -90,3 +91,4 @@ func _tile_position(x: int, z: int, at_plane: int) -> Vector3:
 	var centre_x := x + 0.5
 	var centre_z := z + 0.5
 	#return Vector3(centre_x, TerrainHeightScript.sample(terrain_bundle, centre_x, centre_z, at_plane), centre_z)
+	return Vector3(centre_x, 0.0, centre_z)

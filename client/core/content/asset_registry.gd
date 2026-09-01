@@ -7,6 +7,7 @@ const ITEM_ASSETS := {
 }
 const NPC_ASSETS := {
 	1: preload("res://scenes/mobs/human/male/man_01.tscn"),
+	2: preload("res://scenes/mobs/human/male/man_01.tscn"),
 }
 const OBJECT_ASSETS := {}
 const APPEARANCE_ASSETS := {0: preload("res://scenes/mobs/human/male/man_01.tscn")}
