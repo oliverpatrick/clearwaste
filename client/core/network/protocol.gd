@@ -1,4 +1,3 @@
-class_name GameProtocol
 extends RefCounted
 
 const MAX_PAYLOAD := 32768

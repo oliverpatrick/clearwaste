@@ -1,4 +1,3 @@
-class_name GameNetworkClient
 extends Node
 
 const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd

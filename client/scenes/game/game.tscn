@@ -2,6 +2,7 @@
 
 [ext_resource type="Script" uid="uid://b4mmk812caxst" path="res://scenes/game/game_app.gd" id="1_game"]
 [ext_resource type="Script" uid="uid://bmypmfoti27gk" path="res://scripts/game/world/world_stream.gd" id="2_stream"]
+[ext_resource type="PackedScene" uid="uid://qccibl7w3jxs" path="res://ui/screens/login/login_screen.tscn" id="3_login"]
 
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ifgtf"]
 sky_horizon_color = Color(0.5542817, 0.5669794, 0.5858562, 1)
@@ -32,5 +33,6 @@ script = ExtResource("2_stream")
 
 [node name="Camera" type="Camera3D" parent="." unique_id=828237583]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 42, 78)
-current = true
 fov = 60.0
+
+[node name="LoginScreen" parent="." unique_id=1750058034 instance=ExtResource("3_login")]
