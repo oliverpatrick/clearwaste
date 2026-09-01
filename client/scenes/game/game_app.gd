@@ -5,6 +5,7 @@ const PlayerRegistryScript = preload("res://scripts/game/entities/player/player_
 const ObjectRegistryScript = preload("res://scripts/game/entities/objects/object_registry.gd")
 const Protocol = preload("res://core/network/protocol.gd")
 const WallScene = preload("res://scenes/assets/wall.tscn")
+const PlayerCameraScript = preload("res://scenes/player/player_camera.gd")
 
 @onready var login_screen: LoginScreen = $LoginScreen
 @onready var world_stream: WorldStream = $WorldStream
@@ -79,6 +80,7 @@ func _load_world(_bootstrap: Dictionary) -> void:
 	_build_house(registry)
 	player_registry = PlayerRegistryScript.new()
 	player_registry.configure(registry, int(_bootstrap.local_entity_id))
+	player_registry.local_player_ready.connect(_on_local_player_ready)
 	add_child(player_registry)
 	var objects := ObjectRegistryScript.new()
 	objects.configure(registry)
@@ -94,8 +96,14 @@ func _load_world(_bootstrap: Dictionary) -> void:
 		else:
 			message["item_id"] = message.definition_id
 			objects._spawn_object(message)
-	camera.look_at(Vector3(32.0, 0.0, 32.0), Vector3.UP)
-	camera.current = true
+	if camera.get_script() == null:
+		camera.set_script(PlayerCameraScript)
+	if player_registry.players.has(int(_bootstrap.local_entity_id)):
+		_on_local_player_ready(player_registry.players[int(_bootstrap.local_entity_id)])
+
+func _on_local_player_ready(player: Node3D) -> void:
+	if camera.has_method("configure"):
+		camera.configure(player)
 
 func _build_house(registry) -> void:
 	var region = registry.region_at(0, 0, 0)
