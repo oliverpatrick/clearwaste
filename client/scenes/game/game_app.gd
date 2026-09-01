@@ -4,6 +4,7 @@ const DefinitionRegistryScript = preload("res://core/content/definition_registry
 const PlayerRegistryScript = preload("res://scripts/game/entities/player/player_registry.gd")
 const ObjectRegistryScript = preload("res://scripts/game/entities/objects/object_registry.gd")
 const Protocol = preload("res://core/network/protocol.gd")
+const WallScene = preload("res://scenes/assets/wall.tscn")
 
 @onready var login_screen: LoginScreen = $LoginScreen
 @onready var world_stream: WorldStream = $WorldStream
@@ -17,6 +18,7 @@ var character_id := 0
 var world_host := ""
 var world_port := 0
 var _orbit := Vector2.ZERO
+var player_registry: Node = null
 
 
 func _ready() -> void:
@@ -26,6 +28,7 @@ func _ready() -> void:
 	auth_client.login_failed.connect(_on_login_failed)
 	game_network_client.connected.connect(_on_world_connected)
 	game_network_client.bootstrap_received.connect(_on_bootstrap_received)
+	game_network_client.message_received.connect(_on_world_message)
 	game_network_client.disconnected.connect(_on_world_disconnected)
 
 
@@ -53,6 +56,11 @@ func _on_world_disconnected(reason: String) -> void:
 func _on_world_connected() -> void:
 	pass
 
+func _on_world_message(id: int, message: Variant) -> void:
+	if id == Protocol.POSITION_UPDATE and player_registry != null and message is Dictionary:
+		var player = player_registry.players.get(int(message.entity))
+		if player != null: player.snap_to_tile(int(message.x), int(message.z), int(message.plane))
+
 func _on_bootstrap_received(bootstrap: Dictionary) -> void:
 	login_screen.hide()
 	login_screen.queue_free()
@@ -68,9 +76,10 @@ func _load_world(_bootstrap: Dictionary) -> void:
 	if world_stream.load_all_regions() == 0:
 		push_error("Failed to load regions")
 		return
-	var players := PlayerRegistryScript.new()
-	players.configure(registry, int(_bootstrap.local_entity_id))
-	add_child(players)
+	_build_house(registry)
+	player_registry = PlayerRegistryScript.new()
+	player_registry.configure(registry, int(_bootstrap.local_entity_id))
+	add_child(player_registry)
 	var objects := ObjectRegistryScript.new()
 	objects.configure(registry)
 	add_child(objects)
@@ -79,7 +88,7 @@ func _load_world(_bootstrap: Dictionary) -> void:
 		message["entity"] = message.id
 		message["type"] = message.kind
 		if message.kind == 0 or message.kind == 1:
-			players.handle_message(Protocol.ENTITY_SPAWN, message)
+			player_registry.handle_message(Protocol.ENTITY_SPAWN, message)
 		elif message.kind == 2:
 			objects._spawn_object(message)
 		else:
@@ -87,6 +96,14 @@ func _load_world(_bootstrap: Dictionary) -> void:
 			objects._spawn_object(message)
 	camera.look_at(Vector3(32.0, 0.0, 32.0), Vector3.UP)
 	camera.current = true
+
+func _build_house(registry) -> void:
+	var region = registry.region_at(0, 0, 0)
+	for wall: Dictionary in region.collision.get("walls", []):
+		var node := WallScene.instantiate()
+		node.position = Vector3(float(wall.x) + 0.5, 1.0, float(wall.y) + 0.5)
+		if wall.edge in ["east", "west"]: node.rotation.y = PI / 2.0
+		add_child(node)
 
 func _unhandled_input(event: InputEvent) -> void:
 	if not camera.current: return

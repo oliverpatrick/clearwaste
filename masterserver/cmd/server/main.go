@@ -72,5 +72,6 @@ func registerCodecs(registry *network.Registry) error {
 	if err := interaction.RegisterCodecs(registry); err != nil {
 		return err
 	}
-	return bootstrap.RegisterCodecs(registry)
+	if err := bootstrap.RegisterCodecs(registry); err != nil { return err }
+	return bootstrap.RegisterPositionCodec(registry)
 }

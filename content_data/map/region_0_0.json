@@ -54,16 +54,10 @@
         ],
 
         "walls": [
-          {
-            "x": 15,
-            "y": 15,
-            "edge": "east"
-          },
-          {
-            "x": 15,
-            "y": 16,
-            "edge": "east"
-          }
+          {"x": 7, "y": 7, "edge": "west"}, {"x": 7, "y": 8, "edge": "west"}, {"x": 7, "y": 9, "edge": "west"}, {"x": 7, "y": 10, "edge": "west"}, {"x": 7, "y": 11, "edge": "west"},
+          {"x": 15, "y": 7, "edge": "east"}, {"x": 15, "y": 8, "edge": "east"}, {"x": 15, "y": 9, "edge": "east"}, {"x": 15, "y": 10, "edge": "east"}, {"x": 15, "y": 11, "edge": "east"},
+          {"x": 7, "y": 7, "edge": "north"}, {"x": 8, "y": 7, "edge": "north"}, {"x": 9, "y": 7, "edge": "north"}, {"x": 10, "y": 7, "edge": "north"}, {"x": 11, "y": 7, "edge": "north"}, {"x": 12, "y": 7, "edge": "north"}, {"x": 13, "y": 7, "edge": "north"}, {"x": 14, "y": 7, "edge": "north"}, {"x": 15, "y": 7, "edge": "north"},
+          {"x": 7, "y": 11, "edge": "south"}, {"x": 8, "y": 11, "edge": "south"}, {"x": 9, "y": 11, "edge": "south"}, {"x": 12, "y": 11, "edge": "south"}, {"x": 13, "y": 11, "edge": "south"}, {"x": 14, "y": 11, "edge": "south"}, {"x": 15, "y": 11, "edge": "south"}
         ]
       },
 

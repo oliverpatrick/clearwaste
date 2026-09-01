@@ -110,5 +110,9 @@ func _handle_frame(id: int, payload: PackedByteArray) -> void:
 		else:
 			bootstrap_received.emit(bootstrap)
 		return
+	if id == Protocol.POSITION_UPDATE:
+		if payload.size() != 17: _report_disconnect("Invalid position update")
+		else: message_received.emit(id, {"entity": Protocol._u64(payload, 0), "x": Protocol._s32(payload, 8), "z": Protocol._s32(payload, 12), "plane": payload[16]})
+		return
 	var message = Protocol.decode_message(id, payload)
 	message_received.emit(id, message)

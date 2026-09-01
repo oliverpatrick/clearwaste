@@ -14,6 +14,7 @@ var network
 var _run_enabled := false
 var _touch_started_ms := 0
 var _touch_started_position := Vector2.ZERO
+var current_tile := Vector3i(10, 0, 10)
 
 func configure(view_camera: Camera3D, world_stream, network_client) -> void:
 	camera = view_camera
@@ -90,11 +91,44 @@ func request_screen_destination(screen_position: Vector2, mode: int = 0):
 	var tile = world_to_visible_tile(hit.position, stream.loaded)
 	if tile == null:
 		return reject_unreachable()
-	var frame := build_move_request(tile, mode)
-	if network == null or network.send_frame(frame) != OK:
-		return reject_unreachable()
-	destination_requested.emit(tile, mode, _frame_sequence(frame))
+	if network == null: return reject_unreachable()
+	var path := find_path(current_tile, tile)
+	for step: Vector3i in path:
+		var dx := step.x
+		var dz := step.z
+		var direction := _direction(dx, dz)
+		var frame := build_move_request(direction, mode)
+		if network.send_frame(frame) != OK: return reject_unreachable()
+	current_tile = tile
+	destination_requested.emit(tile, mode, 0)
 	return tile
+
+func find_path(start: Vector3i, goal: Vector3i) -> Array:
+	var open: Array = [start]; var came := {}; var cost := {start: 0}
+	while not open.is_empty():
+		var best := 0
+		for i in range(1, open.size()):
+			var a: Vector3i = open[i]; var b: Vector3i = open[best]
+			if cost[a] + abs(goal.x - a.x) + abs(goal.z - a.z) < cost[b] + abs(goal.x - b.x) + abs(goal.z - b.z): best = i
+		var current: Vector3i = open.pop_at(best)
+		if current == goal: break
+		for delta in [Vector3i(-1, 0, -1), Vector3i(0, 0, -1), Vector3i(1, 0, -1), Vector3i(-1, 0, 0), Vector3i(1, 0, 0), Vector3i(-1, 0, 1), Vector3i(0, 0, 1), Vector3i(1, 0, 1)]:
+			var next := current + delta
+			if not _tile_walkable(next.x, next.z) or (delta.x != 0 and delta.z != 0 and (not _tile_walkable(current.x + delta.x, current.z) or not _tile_walkable(current.x, current.z + delta.z))): continue
+			var next_cost: int = cost[current] + 1
+			if not cost.has(next) or next_cost < cost[next]: cost[next] = next_cost; came[next] = current; open.append(next)
+	if not came.has(goal): return []
+	var result: Array = []; var cursor := goal
+	while cursor != start: var previous: Vector3i = came[cursor]; result.push_front(cursor - previous); cursor = previous
+	return result
+
+func _tile_walkable(x: int, z: int) -> bool:
+	if stream == null or not stream.bundle: return true
+	var region = stream.bundle.region_at(x >> 6, z >> 6, 0)
+	if region == null: return false
+	for tile in region.collision.get("blockedTiles", []):
+		if int(tile[0]) + (x >> 6) * 64 == x and int(tile[1]) + (z >> 6) * 64 == z: return false
+	return true
 
 func _screen_hit(screen_position: Vector2) -> Dictionary:
 	if camera == null:
@@ -103,10 +137,20 @@ func _screen_hit(screen_position: Vector2) -> Dictionary:
 	var query := PhysicsRayQueryParameters3D.create(origin, origin + camera.project_ray_normal(screen_position) * 2000.0)
 	return camera.get_world_3d().direct_space_state.intersect_ray(query)
 
-func build_move_request(tile: Vector3i, mode: int) -> PackedByteArray:
+func build_move_request(direction: int, _mode: int) -> PackedByteArray:
 	if network == null:
 		return PackedByteArray()
-	return Protocol.encode_move(tile.x, tile.z, tile.y, mode, network.next_world_sequence())
+	return Protocol.encode_move(direction, 0, 0, 0, network.next_world_sequence())
+
+func _direction(dx: int, dz: int) -> int:
+	if dx == 0 and dz < 0: return 0
+	if dx > 0 and dz < 0: return 1
+	if dx > 0 and dz == 0: return 2
+	if dx > 0 and dz > 0: return 3
+	if dx == 0 and dz > 0: return 4
+	if dx < 0 and dz > 0: return 5
+	if dx < 0 and dz == 0: return 6
+	return 7
 
 func _frame_sequence(frame: PackedByteArray) -> int:
 	var size := frame.size()

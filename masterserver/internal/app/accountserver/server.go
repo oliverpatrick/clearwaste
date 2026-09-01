@@ -18,6 +18,7 @@ func New(cfg config.AccountConfig) *http.Server {
 		cfg.DevelopmentAccount.Password,
 		character.ID(cfg.DevelopmentAccount.CharacterID),
 	)
+	if second := cfg.SecondDevelopmentAccount; second != nil { repository.Add(account.ID(second.AccountID), second.Email, second.Password, character.ID(second.CharacterID)) }
 	service := login.NewService(repository, world.EntryGrant{
 		Ticket: cfg.WorldEntry.Ticket,
 		Host:   cfg.WorldEntry.Host,

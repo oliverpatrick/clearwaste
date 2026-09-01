@@ -22,9 +22,10 @@ type WorldEntryConfig struct {
 }
 
 type AccountConfig struct {
-	HTTPAddress        string
-	DevelopmentAccount DevelopmentAccountConfig
-	WorldEntry         WorldEntryConfig
+	HTTPAddress              string
+	DevelopmentAccount       DevelopmentAccountConfig
+	WorldEntry               WorldEntryConfig
+	SecondDevelopmentAccount *DevelopmentAccountConfig
 }
 
 func LoadAccount() (AccountConfig, error) {
@@ -60,11 +61,21 @@ func LoadAccount() (AccountConfig, error) {
 	if err != nil || port < 1 || port > 65535 {
 		return AccountConfig{}, fmt.Errorf("invalid WORLD_TCP_ADDR")
 	}
-	return AccountConfig{
+	cfg := AccountConfig{
 		HTTPAddress: envOrDefault("ACCOUNT_HTTP_ADDR", ":8080"),
 		DevelopmentAccount: DevelopmentAccountConfig{
 			Email: email, Password: password, AccountID: accountID, CharacterID: characterID,
 		},
 		WorldEntry: WorldEntryConfig{Ticket: ticket, Host: host, Port: port},
-	}, nil
+	}
+	if email2 := strings.ToLower(strings.TrimSpace(os.Getenv("ACCOUNT_DEV_EMAIL_2"))); email2 != "" {
+		password2 := os.Getenv("ACCOUNT_DEV_PASSWORD_2")
+		id2, _, _ := envOptionalUint64("WORLD_DEV_ACCOUNT_ID_2")
+		char2, _, _ := envOptionalUint64("WORLD_DEV_CHARACTER_ID_2")
+		if password2 == "" || id2 == 0 || char2 == 0 {
+			return AccountConfig{}, fmt.Errorf("incomplete second development account")
+		}
+		cfg.SecondDevelopmentAccount = &DevelopmentAccountConfig{Email: email2, Password: password2, AccountID: id2, CharacterID: char2}
+	}
+	return cfg, nil
 }

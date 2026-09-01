@@ -11,6 +11,7 @@ const MOVE_REQUEST := 6
 const SET_RUN_ENABLED := 7
 const INTERACT := 8
 const WORLD_BOOTSTRAP := 9
+const POSITION_UPDATE := 10
 const CONNECT_ACK := 0x0101
 const ENTITY_SPAWN := 0x0103
 const ENTITY_DESPAWN := 0x0104
@@ -76,7 +77,7 @@ static func decode_bootstrap(payload: PackedByteArray):
 
 static func encode_move(x: int, z: int, plane: int, mode: int, sequence: int) -> PackedByteArray:
 	var payload := PackedByteArray()
-	_put_u32(payload, x); _put_u32(payload, z); payload.append(plane); payload.append(mode); _put_u32(payload, sequence)
+	payload.append(x & 0xff)
 	return encode_frame(MOVE_REQUEST, payload)
 
 static func decode_message(_id: int, _payload: PackedByteArray):

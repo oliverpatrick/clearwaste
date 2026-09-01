@@ -4,9 +4,11 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"sync"
 
 	"master/clearwaste/internal/character"
 	"master/clearwaste/internal/game/entity"
+	"master/clearwaste/internal/game/movement"
 )
 
 type Kind uint8
@@ -39,12 +41,16 @@ type Character struct {
 }
 
 type State struct {
+	mu       sync.Mutex
 	next     entity.ID
 	Entities []RuntimeEntity
+	pending  map[entity.ID][]movement.Direction
+	blocked  map[[3]int32]bool
+	edges    map[[4]int32]bool
 }
 
 func NewState(root string) (*State, error) {
-	s := &State{next: 1}
+	s := &State{next: 1, pending: map[entity.ID][]movement.Direction{}, blocked: map[[3]int32]bool{}, edges: map[[4]int32]bool{}}
 	if err := s.loadRegion(filepath.Join(root, "map", "region_0_0.json")); err != nil {
 		return nil, err
 	}
@@ -52,10 +58,69 @@ func NewState(root string) (*State, error) {
 }
 
 func (s *State) Add(e RuntimeEntity) entity.ID {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	return s.add(e)
+}
+
+func (s *State) add(e RuntimeEntity) entity.ID {
 	e.ID = s.next
 	s.next++
 	s.Entities = append(s.Entities, e)
 	return e.ID
+}
+
+func (s *State) QueueStep(id entity.ID, direction movement.Direction) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if len(s.pending[id]) < 32 {
+		s.pending[id] = append(s.pending[id], direction)
+	}
+}
+
+func (s *State) Tick() []RuntimeEntity {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	changed := []RuntimeEntity{}
+	for id, steps := range s.pending {
+		if len(steps) == 0 {
+			continue
+		}
+		var current *RuntimeEntity
+		for i := range s.Entities {
+			if s.Entities[i].ID == id {
+				current = &s.Entities[i]
+				break
+			}
+		}
+		if current == nil {
+			continue
+		}
+		dx, dz := movement.Delta(steps[0])
+		if s.walkable(current.Position, dx, dz) {
+			current.Position.X += dx
+			current.Position.Z += dz
+			changed = append(changed, *current)
+		}
+		s.pending[id] = steps[1:]
+	}
+	return changed
+}
+
+func (s *State) walkable(p Position, dx, dz int32) bool {
+	if s.blocked[[3]int32{p.X + dx, p.Z + dz, int32(p.Plane)}] {
+		return false
+	}
+	if dx != 0 && dz != 0 && (!s.walkable(p, dx, 0) || !s.walkable(p, 0, dz)) {
+		return false
+	}
+	if dx != 0 && s.edges[[4]int32{p.X, p.Z, int32(p.Plane), dx}] {
+		return false
+	}
+	if dz != 0 && s.edges[[4]int32{p.X, p.Z, int32(p.Plane), dz}] {
+		return false
+	}
+	return true
 }
 
 func DevelopmentCharacter(id character.ID) (Character, bool) {
@@ -87,7 +152,14 @@ func (s *State) loadRegion(path string) error {
 	var src struct {
 		RegionX, RegionY int32
 		Planes           []struct {
-			Plane       uint8
+			Plane     uint8
+			Collision struct {
+				BlockedTiles [][]int32 `json:"blockedTiles"`
+				Walls        []struct {
+					X, Y int32
+					Edge string
+				} `json:"walls"`
+			} `json:"collision"`
 			GameObjects []struct {
 				ObjectID uint16
 				X, Y     int32
@@ -109,6 +181,27 @@ func (s *State) loadRegion(path string) error {
 	for _, p := range src.Planes {
 		if p.Plane != 0 {
 			continue
+		}
+		for _, tile := range p.Collision.BlockedTiles {
+			if len(tile) >= 2 {
+				s.blocked[[3]int32{tile[0] + src.RegionX*64, tile[1] + src.RegionY*64, int32(p.Plane)}] = true
+			}
+		}
+		for _, wall := range p.Collision.Walls {
+			var d int32
+			switch wall.Edge {
+			case "east":
+				d = 1
+			case "west":
+				d = -1
+			case "south":
+				d = 2
+			case "north":
+				d = -2
+			}
+			if d != 0 {
+				s.edges[[4]int32{wall.X + src.RegionX*64, wall.Y + src.RegionY*64, int32(p.Plane), d}] = true
+			}
 		}
 		for _, o := range p.GameObjects {
 			s.Add(RuntimeEntity{Position: Position{o.X + src.RegionX*64, o.Y + src.RegionY*64, p.Plane}, Kind: KindObject, DefinitionID: o.ObjectID})

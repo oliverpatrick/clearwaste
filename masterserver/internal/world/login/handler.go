@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"master/clearwaste/internal/engine/network"
+	"master/clearwaste/internal/game/entity"
+	"master/clearwaste/internal/game/movement"
 	"master/clearwaste/internal/world"
 	"master/clearwaste/internal/world/bootstrap"
 )
@@ -82,6 +84,16 @@ func (h *Handler) Handle(session *network.Session, message network.Message) (boo
 		}
 		if session.State() != network.StateGame {
 			return false, ErrGameplayBeforeLogin
+		}
+		if request, ok := message.(movement.MoveRequest); ok && h.runtime != nil {
+			id := entity.ID(session.RuntimeEntityID())
+			h.runtime.QueueStep(id, request.Direction)
+			for _, moved := range h.runtime.Tick() {
+				if moved.ID == id {
+					_ = session.Send(bootstrap.PositionUpdate{EntityID: id, Position: moved.Position})
+				}
+			}
+			return false, nil
 		}
 		return true, nil
 	}

@@ -9,6 +9,7 @@ import (
 )
 
 const Opcode = opcode.WorldBootstrap
+const OpcodePosition = protocol.Opcode(10)
 
 type Snapshot struct {
 	ID           entity.ID
@@ -110,4 +111,37 @@ func FromEntities(local entity.ID, regionX, regionZ int32, plane uint8, entities
 		m.Entities = append(m.Entities, Snapshot{ID: e.ID, Position: e.Position, Kind: e.Kind, DefinitionID: e.DefinitionID, CharacterID: uint64(e.CharacterID), AppearanceID: e.AppearanceID})
 	}
 	return m
+}
+
+type PositionUpdate struct {
+	EntityID entity.ID
+	Position world.Position
+}
+
+func (PositionUpdate) Opcode() protocol.Opcode { return OpcodePosition }
+func RegisterPositionCodec(registry *network.Registry) error {
+	return network.Register(registry, OpcodePosition, decodePosition, encodePosition)
+}
+func decodePosition(r *protocol.Reader) (PositionUpdate, error) {
+	id, err := r.Uint64()
+	if err != nil {
+		return PositionUpdate{}, err
+	}
+	x, err := r.Int32()
+	if err != nil {
+		return PositionUpdate{}, err
+	}
+	z, err := r.Int32()
+	if err != nil {
+		return PositionUpdate{}, err
+	}
+	p, err := r.Uint8()
+	return PositionUpdate{EntityID: entity.ID(id), Position: world.Position{X: x, Z: z, Plane: p}}, err
+}
+func encodePosition(w *protocol.Writer, m PositionUpdate) error {
+	w.Uint64(uint64(m.EntityID))
+	w.Int32(m.Position.X)
+	w.Int32(m.Position.Z)
+	w.Uint8(m.Position.Plane)
+	return nil
 }
