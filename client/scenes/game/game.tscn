@@ -1,5 +1,8 @@
 [gd_scene format=3 uid="uid://pg2tfllpi3eb"]
 
+[ext_resource type="Script" uid="uid://b4mmk812caxst" path="res://scenes/game/game_app.gd" id="1_game"]
+[ext_resource type="Script" uid="uid://bmypmfoti27gk" path="res://scripts/game/world/world_stream.gd" id="2_stream"]
+
 [sub_resource type="ProceduralSkyMaterial" id="ProceduralSkyMaterial_ifgtf"]
 sky_horizon_color = Color(0.5542817, 0.5669794, 0.5858562, 1)
 ground_bottom_color = Color(0.09172753, 0.07351848, 0.053025566, 1)
@@ -13,12 +16,21 @@ background_mode = 2
 sky = SubResource("Sky_sul5r")
 
 [node name="Game" type="Node" unique_id=1016089749]
+script = ExtResource("1_game")
 
 [node name="Env" type="Node" parent="." unique_id=2126639147]
 
 [node name="Sun" type="DirectionalLight3D" parent="Env" unique_id=1718438034]
-transform = Transform3D(-0.8660254, -0.43301278, 0.25, 0, 0.49999997, 0.86602545, -0.50000006, 0.75, -0.43301266, 0, 50, 0)
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, 1, 0, -1, -4.371139e-08, 0, 50, 0)
 shadow_enabled = true
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="Env" unique_id=314538404]
 environment = SubResource("Environment_7h61r")
+
+[node name="WorldStream" type="Node3D" parent="." unique_id=247771805]
+script = ExtResource("2_stream")
+
+[node name="Camera" type="Camera3D" parent="." unique_id=828237583]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 32, 42, 78)
+current = true
+fov = 60.0

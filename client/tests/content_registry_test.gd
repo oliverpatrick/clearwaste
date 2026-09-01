@@ -3,6 +3,7 @@ extends SceneTree
 const Registry = preload("res://core/content/definition_registry.gd")
 const MapLoaderScript = preload("res://core/content/map_loader.gd")
 const RegionMeshBuilderScript = preload("res://scripts/game/world/region_mesh_builder.gd")
+const GameScene = preload("res://scenes/game/game.tscn")
 
 
 func _init() -> void:
@@ -33,4 +34,15 @@ func _init() -> void:
 	source.planes[0].height.overrides = [{"x": 8, "y": 20, "value": 3.5}]
 	var raised: Dictionary = MapLoaderScript.normalize_region(source)["0:0:0"]
 	assert(is_equal_approx(raised.heights[20][8], base.heights[20][8] + 3.5))
+
+	var game := GameScene.instantiate()
+	root.add_child(game)
+	await process_frame
+	var terrain := game.find_child("Region_0_0_0", true, false)
+	var active_camera := root.get_camera_3d()
+	if terrain == null or active_camera == null:
+		push_error("Game scene did not instantiate visible region terrain")
+		quit(1)
+		return
+	game.free()
 	quit()
