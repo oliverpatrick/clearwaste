@@ -4,6 +4,8 @@ import (
 	"errors"
 
 	"master/clearwaste/internal/engine/network"
+	"master/clearwaste/internal/world"
+	"master/clearwaste/internal/world/bootstrap"
 )
 
 var (
@@ -16,11 +18,16 @@ var (
 type Handler struct {
 	protocolVersion uint16
 	validator       LoginValidator
+	runtime         *world.State
 }
 
 // NewHandler returns a state-aware world-login handler.
-func NewHandler(protocolVersion uint16, validator LoginValidator) *Handler {
-	return &Handler{protocolVersion: protocolVersion, validator: validator}
+func NewHandler(protocolVersion uint16, validator LoginValidator, runtime ...*world.State) *Handler {
+	h := &Handler{protocolVersion: protocolVersion, validator: validator}
+	if len(runtime) > 0 {
+		h.runtime = runtime[0]
+	}
+	return h
 }
 
 // Handle implements network.InboundHandler.
@@ -52,7 +59,22 @@ func (h *Handler) Handle(session *network.Session, message network.Message) (boo
 		if err := session.Authenticate(identity); err != nil {
 			return false, err
 		}
-		return false, session.Send(LoginAccepted{})
+		if err := session.Send(LoginAccepted{}); err != nil {
+			return false, err
+		}
+		if h.runtime != nil {
+			character, ok := world.DevelopmentCharacter(identity.CharacterID)
+			if !ok {
+				return false, session.Send(LoginRejected{})
+			}
+			local := h.runtime.SpawnPlayer(character)
+			session.SetRuntimeEntityID(uint64(local))
+			entities := h.runtime.Visible(character.Spawn.X/64, character.Spawn.Z/64, character.Spawn.Plane)
+			if err := session.Send(bootstrap.FromEntities(local, character.Spawn.X/64, character.Spawn.Z/64, character.Spawn.Plane, entities)); err != nil {
+				return false, err
+			}
+		}
+		return false, nil
 
 	default:
 		if _, ok := message.(network.GameplayMessage); !ok {

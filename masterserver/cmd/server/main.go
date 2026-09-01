@@ -13,6 +13,8 @@ import (
 	"master/clearwaste/internal/engine/network/transport"
 	"master/clearwaste/internal/game/interaction"
 	"master/clearwaste/internal/game/movement"
+	"master/clearwaste/internal/world"
+	"master/clearwaste/internal/world/bootstrap"
 	"master/clearwaste/internal/world/login"
 )
 
@@ -32,7 +34,11 @@ func main() {
 			CharacterID: character.ID(development.CharacterID),
 		})
 	}
-	handler := login.NewHandler(cfg.ProtocolVersion, validator)
+	runtimeState, err := world.NewState(cfg.ContentRoot)
+	if err != nil {
+		log.Fatal(err)
+	}
+	handler := login.NewHandler(cfg.ProtocolVersion, validator, runtimeState)
 	listener, err := transport.ListenTCP(cfg.TCPAddress)
 	if err != nil {
 		log.Fatal(err)
@@ -63,5 +69,8 @@ func registerCodecs(registry *network.Registry) error {
 	if err := movement.RegisterCodecs(registry); err != nil {
 		return err
 	}
-	return interaction.RegisterCodecs(registry)
+	if err := interaction.RegisterCodecs(registry); err != nil {
+		return err
+	}
+	return bootstrap.RegisterCodecs(registry)
 }

@@ -3,7 +3,6 @@ extends Node3D
 
 const Protocol = preload("uid://bvppiqbq80y0l") # network/protocol.gd
 const AssetRegistryScript = preload("res://core/content/asset_registry.gd")
-const PLAYER_SCENE = preload("res://scenes/player/player.tscn")
 
 signal local_player_ready(player: Node3D)
 
@@ -51,7 +50,10 @@ func _spawn_player(message: Dictionary) -> void:
 	if players.has(index):
 		players[index].snap_to_tile(message.x, message.z, message.plane)
 		return
-	var player: Node3D = PLAYER_SCENE.instantiate()
+	var player_scene = AssetRegistryScript.appearance_scene(int(message.get("appearance_id", 0)))
+	if player_scene == null:
+		return
+	var player: Node3D = player_scene.instantiate()
 	player.name = "Player_%d" % index
 	player.configure(index, message.name, bundle)
 	player.snap_to_tile(message.x, message.z, message.plane)

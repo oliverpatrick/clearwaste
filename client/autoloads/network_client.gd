@@ -6,6 +6,7 @@ const PROTOCOL_VERSION := 1
 signal connected
 signal disconnected(reason: String)
 signal message_received(id: int, message: Variant)
+signal bootstrap_received(bootstrap: Dictionary)
 
 var peer := StreamPeerTCP.new()
 var receive_buffer := PackedByteArray()
@@ -101,6 +102,13 @@ func _handle_frame(id: int, payload: PackedByteArray) -> void:
 			_report_disconnect("World login rejected")
 			return
 		_report_disconnect("Invalid world login response")
+		return
+	if id == Protocol.WORLD_BOOTSTRAP:
+		var bootstrap = Protocol.decode_bootstrap(payload)
+		if bootstrap == null:
+			_report_disconnect("Invalid world bootstrap")
+		else:
+			bootstrap_received.emit(bootstrap)
 		return
 	var message = Protocol.decode_message(id, payload)
 	message_received.emit(id, message)

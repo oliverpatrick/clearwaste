@@ -13,4 +13,5 @@ const (
 	MoveRequest     protocol.Opcode = 6
 	SetRunEnabled   protocol.Opcode = 7
 	InteractRequest protocol.Opcode = 8
+	WorldBootstrap  protocol.Opcode = 9
 )

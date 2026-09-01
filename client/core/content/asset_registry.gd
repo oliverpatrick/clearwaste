@@ -7,10 +7,9 @@ const ITEM_ASSETS := {
 }
 const NPC_ASSETS := {
 	1: preload("res://scenes/mobs/human/male/man_01.tscn"),
-	2: preload("res://scenes/mobs/human/female/woman_01.tscn"),
 }
 const OBJECT_ASSETS := {}
-const APPEARANCE_ASSETS := {0: preload("res://scenes/player/player.tscn")}
+const APPEARANCE_ASSETS := {0: preload("res://scenes/mobs/human/male/man_01.tscn")}
 
 static func item_scene(item_id: int):
 	return ITEM_ASSETS.get(item_id)

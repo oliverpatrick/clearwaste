@@ -64,7 +64,7 @@ func _init() -> void:
 
 	game._on_login_succeeded(valid_response)
 	await process_frame
-	game._on_world_connected()
+	game._on_bootstrap_received({"local_entity_id": 1, "region_x": 0, "region_z": 0, "plane": 0, "entities": []})
 	await process_frame
 	assert(game.find_child("LoginScreen", true, false) == null)
 	assert(game.find_child("Region_0_0_0", true, false) != null)

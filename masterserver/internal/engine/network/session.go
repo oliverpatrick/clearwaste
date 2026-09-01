@@ -41,12 +41,16 @@ type Session struct {
 	id      ConnectionID
 	inbound chan Message
 
-	mu          sync.Mutex
-	state       SessionState
-	identity    Identity
-	hasIdentity bool
-	send        func(Message) error
+	mu            sync.Mutex
+	state         SessionState
+	identity      Identity
+	hasIdentity   bool
+	runtimeEntity uint64
+	send          func(Message) error
 }
+
+func (s *Session) SetRuntimeEntityID(id uint64) { s.mu.Lock(); s.runtimeEntity = id; s.mu.Unlock() }
+func (s *Session) RuntimeEntityID() uint64      { s.mu.Lock(); defer s.mu.Unlock(); return s.runtimeEntity }
 
 func newSession(id ConnectionID, capacity int) *Session {
 	return &Session{id: id, inbound: make(chan Message, capacity), state: StateHandshake}
