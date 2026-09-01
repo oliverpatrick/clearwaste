@@ -1,6 +1,8 @@
 class_name DefinitionRegistry
 extends RefCounted
 
+const MapLoaderScript = preload("res://core/content/map_loader.gd")
+
 var items: Dictionary = {}
 var mobs: Dictionary = {}
 var regions: Dictionary = {}
@@ -14,7 +16,7 @@ func load_content(root_path: String = "") -> bool:
 	regions.clear()
 	return _load_definitions(root_path.path_join("items"), items) \
 		and _load_definitions(root_path.path_join("mobs"), mobs) \
-		and _load_regions(root_path.path_join("map"))
+		and _load_initial_region(root_path.path_join("map/region_0_0.json"))
 
 
 func item_by_id(id: int):
@@ -25,8 +27,8 @@ func mob_by_id(id: int):
 	return mobs.get(id)
 
 
-func region_at(x: int, y: int):
-	return regions.get(Vector2i(x, y))
+func region_at(x: int, y: int, plane: int = 0):
+	return regions.get("%d:%d:%d" % [x, y, plane])
 
 
 func _load_definitions(path: String, registry: Dictionary) -> bool:
@@ -46,18 +48,10 @@ func _load_definitions(path: String, registry: Dictionary) -> bool:
 	return true
 
 
-func _load_regions(path: String) -> bool:
-	var directory := DirAccess.open(path)
-	if directory == null:
-		return false
-	for file_name in directory.get_files():
-		if file_name.get_extension().to_lower() != "json":
-			continue
-		var region = _read_json(path.path_join(file_name))
-		if region == null:
-			return false
-		regions[Vector2i(int(region.regionX), int(region.regionY))] = region
-	return true
+func _load_initial_region(path: String) -> bool:
+	var loaded := MapLoaderScript.load_region(path)
+	regions.merge(loaded)
+	return not loaded.is_empty()
 
 
 func _read_json(path: String):

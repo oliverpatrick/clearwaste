@@ -23,6 +23,12 @@ window/stretch/aspect="expand"
 
 3d/physics_engine="Jolt Physics"
 
+[terrain]
+
+noise_seed=0
+noise_frequency=0.02
+noise_amplitude=8.0
+
 [rendering]
 
 rendering_device/driver.windows="d3d12"
